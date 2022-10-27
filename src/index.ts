@@ -1,5 +1,4 @@
 import { HBExporter, HBExporterDependencies } from "./exporter";
-
 import { createClient } from "redis-mock";
 import { MockUUIDGen } from "./uuid";
 import { MockPermissions } from "./permissions";
@@ -13,7 +12,7 @@ function mockOpenFile() {
   });
 }
 
-function sleep(ms: number) {
+export function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
@@ -35,17 +34,25 @@ async function StartApp() {
   };
 
   const exporter = HBExporter(exporterDeps);
+  const openFileReadStream = mockOpenFile();
 
   try {
-    exporter.StartExport(myUser, mockOpenFile());
+    exporter.StartExport(myUser, openFileReadStream);
   } catch (e) {
     console.log(e);
   }
 
+  // ==>> Cancel export functionality, Uncomment for demo <<==
+  // try {
+  //   exporter.CancelExport(myUser, openFileReadStream);
+  // } catch (e) {
+  //   console.log(e);
+  // }
+
   while (1) {
     await sleep(500);
-    const res = await exporter.GetExportStatus(MockUUIDGen.NewUUID())
-    console.log(res)
+    const res = await exporter.GetExportStatus(MockUUIDGen.NewUUID());
+    console.log(res);
   }
 }
 
